@@ -17,7 +17,8 @@ This script uses Playwright to automate browser actions. It launches a Chromium 
 
 Install Playwright:
 
-<img width="1135" height="838" alt="Screenshot 2026-08-26 at 7 04 40 PM" src="https://github.com/user-attachments/assets/1cb3bc9b-ff5e-4643-b5e1-6d76b01d673d" />
+<img width="1135" height="838" alt="Screenshot 2026-08-26 at 7 04 40 PM" src="https://github.com/user-attachments/assets/8241be06-b2d6-49eb-b5a1-c1a2628c2faa" />
+
 
 
 ```bash
