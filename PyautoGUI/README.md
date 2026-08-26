@@ -32,9 +32,9 @@ The automation is implemented using **PyAutoGUI** and is designed to run on **ma
 
 Install the required package:
 
-```bash
-pip install pyautogui
+<img width="454" height="705" alt="Screenshot 2026-08-26 at 3 20 14 PM" src="https://github.com/user-attachments/assets/f203ab52-958e-41a2-8e5e-6eed5325f510" />
 
-<img width="454" height="705" alt="Screenshot 2026-08-26 at 3 20 14 PM" src="https://github.com/user-attachments/assets/0eea1ca9-11a7-459d-8c82-6b9547a29dd0" />
+
+
 
 
