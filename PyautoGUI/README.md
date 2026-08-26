@@ -5,7 +5,7 @@
 This project automates the process of:
 
 1. Opening Google Chrome.
-2. Searching for the Amazon stock price.
+2. Searching for the Amazon, Apple, Microsoft, Nvidia and Google.
 3. Copying the search result content.
 4. Opening Microsoft Excel.
 5. Creating a simple report with:
@@ -32,7 +32,8 @@ The automation is implemented using **PyAutoGUI** and is designed to run on **ma
 
 Install the required package:
 
-<img width="454" height="705" alt="Screenshot 2026-08-26 at 3 20 14 PM" src="https://github.com/user-attachments/assets/f203ab52-958e-41a2-8e5e-6eed5325f510" />
+<img width="435" height="234" alt="Screenshot 2026-08-26 at 6 46 07 PM" src="https://github.com/user-attachments/assets/35586ccc-e1bf-432e-80fd-489d3aec0490" />
+
 
 
 
