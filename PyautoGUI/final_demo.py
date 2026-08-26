@@ -1,96 +1,184 @@
+"""
+Stock Price Reporter — pyautogui automation (macOS)
+----------------------------------------------------
+Searches each company's share price on Google via Chrome,
+copies the price, writes all 5 into a new Excel workbook,
+saves it, and takes a screenshot.
+
+Requirements:
+    pip install pyautogui pyperclip pillow
+    Microsoft Excel must be installed on this Mac.
+"""
+
 import pyautogui
+import pyperclip
+import subprocess
 import time
 from datetime import datetime
 
-import subprocess
+# ── settings ─────────────────────────────────────────────────────────────────
+pyautogui.FAILSAFE = True   # move mouse to top-left corner to abort
+pyautogui.PAUSE    = 0.4    # small global delay between every call
 
-subprocess.run([
-    "screencapture",
-    "excel_sheet.png"
-])
+STOCKS = [
+    ("Amazon",    "Amazon share price"),
+    ("Google",    "Google share price"),
+    ("Apple",     "Apple share price"),
+    ("Microsoft", "Microsoft share price"),
+    ("Nvidia",    "Nvidia share price"),
+]
 
-pyautogui.FAILSAFE = True 
-pyautogui.PAUSE = 0.5
+today      = datetime.now().strftime("%Y-%m-%d")
+timestamp  = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+excel_file = f"stock_prices_{today}.xlsx"
+screenshot = f"stock_prices_{today}.png"
 
-print("Step 1: Opening the chrome browser")
-time.sleep(2)
+# ── helper ────────────────────────────────────────────────────────────────────
+def pause(seconds):
+    time.sleep(seconds)
 
-# Fix 1: Added interval to ensure macOS registers the shortcut     
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 1 — Open Chrome
+# ─────────────────────────────────────────────────────────────────────────────
+print("Step 1: Opening Chrome ...")
 pyautogui.hotkey('command', 'space', interval=0.1)
-time.sleep(1)
-
-# Fix 2: Added interval=0.1 to simulate human typing speed
+pause(1)
 pyautogui.write('chrome', interval=0.1)
-time.sleep(1)
-
-# Fix 3: Changed 'enter' to 'return' for Mac Spotlight compatibility
+pause(1)
 pyautogui.press('return')
-time.sleep(3)
+pause(3)
 
-print("Step 2: Opening new tab and navigating to the URL")
-time.sleep(2)
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 2 — Fetch each stock price from Google
+# ─────────────────────────────────────────────────────────────────────────────
+prices = {}
 
-pyautogui.hotkey('command', 't')
-time.sleep(1)
-pyautogui.write('Amazon Share price', interval=0.1)
-time.sleep(1)
-pyautogui.press('return')
-time.sleep(3)
+for company, search_query in STOCKS:
+    print(f"Step 2: Fetching price for {company} ...")
 
-print("Step 3: Copying the stock price")
-time.sleep(2)
+    # open a new tab and search
+    pyautogui.hotkey('command', 't')
+    pause(1)
+    pyautogui.hotkey('command', 'l')   # focus address bar
+    pause(0.5)
+    pyautogui.hotkey('command', 'a')   # select any existing text
+    pause(0.3)
+    pyautogui.write(search_query, interval=0.08)
+    pause(0.5)
+    pyautogui.press('return')
+    pause(4)   # wait for Google results to load
 
-# pyautogui.moveTo(-500, 500, duration=1)
-# pyautogui.doubleClick()
-# time.sleep(1)
-pyautogui.hotkey('command', 'a', interval=0.1)
-time.sleep(3)
-pyautogui.hotkey('command', 'c', interval=0.1)
-time.sleep(2)
+    # Google shows the price in a large element — click the address bar,
+    # select all page text and copy it so we can parse the price from clipboard
+    pyautogui.hotkey('command', 'a', interval=0.1)
+    pause(1)
+    pyautogui.hotkey('command', 'c', interval=0.1)
+    pause(1)
 
-print("Step 4: Opening excel")
-time.sleep(2)
+    clipboard_text = pyperclip.paste()
+
+    # Parse price: look for the first token that looks like a number (e.g. 185.23)
+    price_value = "N/A"
+    for token in clipboard_text.replace(',', '').split():
+        # strip common currency symbols
+        clean = token.lstrip('$£€').strip()
+        try:
+            float(clean)
+            # accept only plausible share price range
+            if 0.01 < float(clean) < 100000:
+                price_value = clean
+                break
+        except ValueError:
+            continue
+
+    prices[company] = price_value
+    print(f"  {company}: {price_value}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 3 — Open Excel
+# ─────────────────────────────────────────────────────────────────────────────
+print("Step 3: Opening Excel ...")
 pyautogui.hotkey('command', 'space', interval=0.1)
-time.sleep(1)
+pause(1)
 pyautogui.write('excel', interval=0.1)
-time.sleep(1)
+pause(1)
 pyautogui.press('return')
-time.sleep(3)
-pyautogui.press('return')  # Press return to open a new workbook
-time.sleep(3)
+pause(4)
 
-print("Step 5: Creating new row in excel and pasting the stock price")
-time.sleep(2)
-pyautogui.write('Date', interval=0.1)
-time.sleep(1)
-pyautogui.press('tab')
-time.sleep(1)
-pyautogui.write('Stock Price', interval=0.1)
-time.sleep(1)
-pyautogui.press('tab')
-time.sleep(1)
-pyautogui.write('Comments', interval=0.1)
-time.sleep(1)
+# Press return/enter to dismiss any splash screen / open a blank workbook
 pyautogui.press('return')
-time.sleep(1)
-current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-pyautogui.write(current_time, interval=0.1)
-time.sleep(1)
-pyautogui.press('tab')
-time.sleep(1)
-pyautogui.hotkey('command', 'v')
-time.sleep(1)
-pyautogui.press('tab')
-time.sleep(1)
-pyautogui.write('Stock price copied from moneycontrol.com', interval=0.1)
-time.sleep(3)
+pause(3)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 4 — Type the header row
+# ─────────────────────────────────────────────────────────────────────────────
+print("Step 4: Writing header row ...")
+
+def type_cell(value, move_next='tab'):
+    pyautogui.write(str(value), interval=0.08)
+    pause(0.3)
+    pyautogui.press(move_next)
+    pause(0.3)
+
+# Headers:  #  |  Company  |  Ticker  |  Price (USD)  |  Fetched At
+type_cell('#')
+type_cell('Company')
+type_cell('Ticker')
+type_cell('Price (USD)')
+type_cell('Fetched At', move_next='return')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 5 — Type one data row per stock
+# ─────────────────────────────────────────────────────────────────────────────
+print("Step 5: Writing stock data rows ...")
+
+TICKERS = {
+    "Amazon":    "AMZN",
+    "Google":    "GOOGL",
+    "Apple":     "AAPL",
+    "Microsoft": "MSFT",
+    "Nvidia":    "NVDA",
+}
+
+for idx, (company, _) in enumerate(STOCKS, start=1):
+    ticker = TICKERS[company]
+    price  = prices[company]
+    print(f"  Writing row {idx}: {company} — {price}")
+
+    type_cell(idx)
+    type_cell(company)
+    type_cell(ticker)
+    type_cell(price)
+    type_cell(timestamp, move_next='return')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 6 — Save the workbook
+# ─────────────────────────────────────────────────────────────────────────────
+print("Step 6: Saving the workbook ...")
 pyautogui.hotkey('command', 's')
-time.sleep(1)
-pyautogui.write('daily_report_2026-08-26.xlsx', interval=0.1)
-time.sleep(2)
-pyautogui.press('return')
-time.sleep(2)
+pause(2)
 
-print("Step 6: Take a screenshot of the excel sheet")
-time.sleep(2)
-subprocess.run(["screencapture", "excel_sheet.png"])
+# Type filename in the Save dialog
+pyautogui.hotkey('command', 'a')   # clear any default name
+pause(0.5)
+pyautogui.write(excel_file, interval=0.08)
+pause(1)
+pyautogui.press('return')
+pause(2)
+
+# If Excel asks "Keep in xlsx format?" press Return to confirm
+pyautogui.press('return')
+pause(2)
+
+print(f"  Saved as {excel_file}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 7 — Take a screenshot
+# ─────────────────────────────────────────────────────────────────────────────
+print("Step 7: Taking screenshot ...")
+pause(1)
+screen = pyautogui.screenshot()
+screen.save(screenshot)
+print(f"  Screenshot saved as {screenshot}")
+
+print(f"\n✅  Done — {len(STOCKS)} stocks written to {excel_file}")
