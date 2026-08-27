@@ -1,4 +1,4 @@
-# FastAPI Grade Calculator
+# FastAPI Test
 
 A beginner-friendly REST API built using **Python**, **FastAPI**, and **Uvicorn**. The application provides a simple root endpoint and a greeting endpoint that accepts a name as a URL path parameter.
 
