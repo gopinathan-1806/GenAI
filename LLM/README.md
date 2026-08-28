@@ -96,7 +96,104 @@ ollama pull qwen2.5:3b
 The 3B model may provide better responses but requires more compute
 resources.
 
-## 5. Test the LLM
+## 4. Install the LLM Model
+
+Ollama is the runtime that manages and serves the LLM. The actual LLM model is downloaded separately and stored locally on the VM.
+
+For this setup, we use **Qwen3 1.7B**, a relatively small model suitable for lightweight CPU-based experimentation.
+
+### Download the model
+
+```bash
+ollama pull qwen3:1.7b
+```
+
+This downloads the model files to the VM. The model does not require a separate application installer.
+
+### Verify the installed model
+
+```bash
+ollama list
+```
+
+Expected output will look similar to:
+
+```text
+NAME          ID              SIZE
+qwen3:1.7b    8f68893c685c    1.4 GB
+```
+
+### Start and interact with the model
+
+```bash
+ollama run qwen3:1.7b
+```
+
+You can then enter prompts interactively:
+
+```text
+>>> Explain Kubernetes deployment in simple terms
+```
+
+For a one-time prompt:
+
+```bash
+ollama run qwen3:1.7b "Explain Kubernetes deployment in simple terms"
+```
+
+### Where is the LLM installed?
+
+The model is stored in Ollama's local model directory on the VM. You can inspect Ollama's configuration/environment with:
+
+```bash
+ollama show qwen3:1.7b
+```
+
+The important distinction is:
+
+```text
+Ollama       = LLM runtime/server
+qwen3:1.7b   = actual LLM model
+Streamlit    = web-based user interface
+```
+
+So the complete installation flow is:
+
+```text
+Ubuntu VM
+   |
+   v
+Install Ollama
+   |
+   v
+ollama pull qwen3:1.7b
+   |
+   v
+Model stored locally
+   |
+   v
+ollama run qwen3:1.7b
+   |
+   v
+Ollama API :11434
+   |
+   v
+Streamlit UI :8501
+```
+
+### Alternative lightweight model
+
+If the VM has limited CPU/RAM and Qwen3 1.7B is still slow, you can try another smaller model available through Ollama.
+
+For example:
+
+```bash
+ollama pull qwen2.5:3b
+```
+
+Note that a model's size is not the only factor affecting performance. CPU resources, available RAM, prompt length, context size, and generation length can all affect response time.
+
+## 6. Test the LLM
 
 Test directly from the VM:
 
@@ -112,7 +209,7 @@ ollama run qwen3:1.7b "Explain Kubernetes deployment in simple terms"
 
 Only proceed to Streamlit after this works successfully.
 
-## 6. Test the Ollama API
+## 7. Test the Ollama API
 
 ``` bash
 curl http://localhost:11434/api/chat   -H "Content-Type: application/json"   -d '{
@@ -129,7 +226,7 @@ curl http://localhost:11434/api/chat   -H "Content-Type: application/json"   -d 
 
 A JSON response confirms that the model can be consumed by the UI.
 
-## 7. Install Python Dependencies
+## 8. Install Python Dependencies
 
 Create the application directory:
 
@@ -152,7 +249,7 @@ pip install --upgrade pip
 pip install streamlit requests
 ```
 
-## 8. Streamlit Application
+## 9. Streamlit Application
 
 Create `app.py` and configure it to send requests to:
 
@@ -188,7 +285,7 @@ response.raise_for_status()
 answer = response.json()["message"]["content"]
 ```
 
-## 9. Start the Streamlit UI
+## 10. Start the Streamlit UI
 
 Run:
 
@@ -208,7 +305,7 @@ Check locally:
 curl http://localhost:8501
 ```
 
-## 10. Access from Your Laptop
+## 11. Access from Your Laptop
 
 Find the VM IP:
 
@@ -231,7 +328,7 @@ http://10.x.x.x:8501
 If the VM is protected by a cloud security group/firewall, allow TCP
 `8501` from the required client network.
 
-## 11. Security Recommendation
+## 12. Security Recommendation
 
 Use this architecture:
 
@@ -258,7 +355,7 @@ For an enterprise/internal deployment, consider: - HTTPS - Reverse proxy
 such as NGINX - SSO/authentication - Restricted source IPs -
 Firewall/security-group rules - Logging and monitoring - Resource limits
 
-## 12. Run Streamlit as a Systemd Service
+## 13. Run Streamlit as a Systemd Service
 
 Create:
 
@@ -304,7 +401,7 @@ View logs:
 sudo journalctl -u local-ai -f
 ```
 
-## 13. Troubleshooting Read Timeout
+## 14. Troubleshooting Read Timeout
 
 If the UI shows:
 
@@ -351,7 +448,7 @@ top
 For a CPU-only VM, generation can be slow. Increase the application
 timeout, reduce prompt size, or use a smaller model if necessary.
 
-## 14. Useful Monitoring Commands
+## 15. Useful Monitoring Commands
 
 ``` bash
 free -h
@@ -363,7 +460,7 @@ sudo journalctl -u ollama -f
 sudo journalctl -u local-ai -f
 ```
 
-## 15. DevOps Troubleshooting Assistant -- Next Stage
+## 16. DevOps Troubleshooting Assistant -- Next Stage
 
 Once the basic chat application works, it can be extended into a
 Kubernetes troubleshooting assistant.
@@ -417,7 +514,7 @@ This can provide DevOps engineers with a single view of the
 application's Kubernetes resources and help identify dependency or
 availability issues faster.
 
-## 16. Setup Summary
+## 17. Setup Summary
 
 The complete setup has three primary layers:
 
@@ -435,5 +532,7 @@ Typical ports:
 The model remains on the VM, while users interact through the Streamlit
 interface.
 
+
 <img width="1357" height="795" alt="Screenshot 2026-08-28 at 10 35 43 PM" src="https://github.com/user-attachments/assets/a6b59459-16a6-4d57-8783-c7e86bb2141c" />
-<img width="747" height="713" alt="Screenshot 2026-08-28 at 10 20 29 PM" src="https://github.com/user-attachments/assets/ea3a699e-8cb7-4d1b-8db1-2ee052e80487" />
+<img width="1496" height="558" alt="Screenshot 2026-08-28 at 10 05 12 PM" src="https://github.com/user-attachments/assets/a6f27088-3a32-4257-a58c-5d5eef8947c6" />
+
