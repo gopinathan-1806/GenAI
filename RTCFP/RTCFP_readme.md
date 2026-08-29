@@ -32,4 +32,6 @@ Date | Day | Time | Menu Name | Nutrition Content | Calories | Veg/Non-Veg
 
 The meal plan should cover all 15 days and include calorie and nutrition information for each meal.
 
+## Output from LLM model based on our RTCFP prompt
+
 <img width="930" height="696" alt="Screenshot 2026-08-29 at 10 23 08 PM" src="https://github.com/user-attachments/assets/31379635-e0fa-4bd3-9eee-998b18ae68bc" />
